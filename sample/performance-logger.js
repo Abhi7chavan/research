@@ -580,3 +580,17 @@ window.testAIHostingCapabilities = async (platformUrl) => {
     
     return results;
 };
+
+// Auto-log performance data when page loads
+window.addEventListener('load', async () => {
+    // Wait a bit for all metrics to be available
+    setTimeout(async () => {
+        try {
+            const metrics = await performanceMonitor.getDetailedMetrics();
+            await performanceMonitor.logPerformance(metrics);
+            console.log('✅ Automatic performance data logged to database');
+        } catch (error) {
+            console.warn('❌ Failed to auto-log performance data:', error);
+        }
+    }, 2000); // Wait 2 seconds after page load
+});
