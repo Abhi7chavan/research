@@ -39,6 +39,7 @@ async function initializeDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS cart_items (
         id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
         session_id VARCHAR(100) NOT NULL,
         product_id INTEGER REFERENCES products(id),
         quantity INTEGER DEFAULT 1,
@@ -63,12 +64,12 @@ async function initializeDatabase() {
       console.log('📦 Adding sample products...');
       await pool.query(`
         INSERT INTO products (name, price, description, image_url, stock) VALUES
-        ('iPhone 15', 999.99, 'Latest iPhone with advanced features', 'https://via.placeholder.com/300x300?text=iPhone+15', 50),
-        ('MacBook Pro', 1999.99, 'Powerful laptop for professionals', 'https://via.placeholder.com/300x300?text=MacBook+Pro', 25),
-        ('AirPods Pro', 249.99, 'Wireless earbuds with noise cancellation', 'https://via.placeholder.com/300x300?text=AirPods+Pro', 100),
-        ('iPad Air', 599.99, 'Versatile tablet for work and play', 'https://via.placeholder.com/300x300?text=iPad+Air', 75),
-        ('Apple Watch', 399.99, 'Smart watch with health monitoring', 'https://via.placeholder.com/300x300?text=Apple+Watch', 60),
-        ('iPhone Case', 29.99, 'Protective case for your iPhone', 'https://via.placeholder.com/300x300?text=iPhone+Case', 200)
+        ('iPhone 15', 999.99, 'Latest iPhone with advanced features', 'https://images.unsplash.com/photo-1592286927505-1def25115558?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 50),
+        ('MacBook Pro', 1999.99, 'Powerful laptop for professionals', 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?q=80&w=1289&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 25),
+        ('AirPods Pro', 249.99, 'Wireless earbuds with noise cancellation', 'https://images.unsplash.com/photo-1606061587005-c1c57d134082?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aSUyMHBob25lJTIwY2FzZXxlbnwwfHwwfHx8MA%3D%3D', 100),
+        ('iPad Air', 599.99, 'Versatile tablet for work and play', 'https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBwbGUlMjB3YXRjaHxlbnwwfHwwfHx8MA%3D%3D', 75),
+        ('Apple Watch', 399.99, 'Smart watch with health monitoring', 'https://images.unsplash.com/photo-1649194270405-0dfaf13cda14?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aSUyMHBhZCUyMGFpcnxlbnwwfHwwfHx8MA%3D%3D', 60),
+        ('iPhone Case', 29.99, 'Protective case for your iPhone', 'https://plus.unsplash.com/premium_photo-1671247953201-2fdc17af6692?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bWFjJTIwYm9vayUyMHByb3xlbnwwfHwwfHx8MA%3D%3D', 200)
       `);
     }
     
@@ -102,7 +103,7 @@ app.get('/api/products', async (req, res) => {
 // Add item to cart
 app.post('/api/cart/add', async (req, res) => {
   try {
-    const { sessionId, productId, quantity = 1 } = req.body;
+    const { sessionId, name, productId, quantity = 1 } = req.body;
     
     // Check if item already exists in cart
     const existing = await pool.query(
@@ -119,8 +120,8 @@ app.post('/api/cart/add', async (req, res) => {
     } else {
       // Insert new item
       await pool.query(
-        'INSERT INTO cart_items (session_id, product_id, quantity) VALUES ($1, $2, $3)',
-        [sessionId, productId, quantity]
+        'INSERT INTO cart_items (session_id, name, product_id, quantity) VALUES ($1, $2, $3, $4)',
+        [sessionId, name, productId, quantity]
       );
     }
     
