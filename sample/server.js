@@ -14,8 +14,8 @@ app.use(express.static(path.join(__dirname)));
 
 // PostgreSQL connection
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  connectionString: 'postgresql://postgres:cjleOhsDvHzCJifPQPfPbJtxIOrcaoYK@shinkansen.proxy.rlwy.net:59114/railway',
+  ssl: { rejectUnauthorized: false }
 });
 
 // Initialize database tables
@@ -295,12 +295,7 @@ app.listen(port, () => {
   console.log(`🚀 Heavy Render Server running on port ${port}`);
   console.log(`📊 Performance API available at /api/analytics`);
   console.log(`🔍 Health check available at /health`);
-  
-  if (process.env.DATABASE_URL) {
-    console.log('✅ Database connection configured');
-  } else {
-    console.log('⚠️  DATABASE_URL not found in environment variables');
-  }
+  console.log('✅ Database connection hardcoded for Railway PostgreSQL');
 });
 
 // Graceful shutdown
