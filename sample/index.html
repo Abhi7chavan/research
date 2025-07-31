@@ -168,6 +168,8 @@
         <div id="fps-counter" class="text-green-400">FPS: 60</div>
         <div id="element-counter" class="text-blue-400">Elements: 0</div>
         <div id="memory-usage" class="text-yellow-400">Memory: 0MB</div>
+        <div id="platform-info" class="text-purple-400">Platform: Detecting...</div>
+        <div id="load-time" class="text-orange-400">Load: 0ms</div>
     </div>
     
     <script>
@@ -188,6 +190,73 @@
             requestAnimationFrame(updateFPS);
         }
         updateFPS();
+        
+        // Platform detection and performance tracking
+        const loadStartTime = performance.now();
+        let platformName = 'Unknown';
+        
+        // Detect deployment platform
+        function detectPlatform() {
+            const hostname = window.location.hostname;
+            if (hostname.includes('onrender.com')) {
+                platformName = 'Render';
+            } else if (hostname.includes('railway.app')) {
+                platformName = 'Railway';
+            } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+                platformName = 'Local';
+            } else {
+                platformName = 'Custom Domain';
+            }
+            document.getElementById('platform-info').textContent = `Platform: ${platformName}`;
+        }
+        
+        // Cold start detection
+        function detectColdStart() {
+            const navigation = performance.getEntriesByType('navigation')[0];
+            const ttfb = Math.round(navigation.responseStart - navigation.requestStart);
+            
+            // Heuristic: Cold start if TTFB > 3 seconds
+            const isColdStart = ttfb > 3000;
+            
+            if (isColdStart) {
+                console.log(`🧊 COLD START DETECTED on ${platformName}: TTFB = ${ttfb}ms`);
+                
+                // Add cold start indicator to UI
+                const indicator = document.createElement('div');
+                indicator.className = 'fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50';
+                indicator.textContent = `❄️ Cold Start: ${ttfb}ms`;
+                document.body.appendChild(indicator);
+                
+                setTimeout(() => indicator.remove(), 10000);
+            }
+            
+            return { isColdStart, ttfb };
+        }
+        
+        // Track page load performance
+        window.addEventListener('load', () => {
+            const loadTime = Math.round(performance.now() - loadStartTime);
+            document.getElementById('load-time').textContent = `Load: ${loadTime}ms`;
+            
+            // Detect cold start
+            const coldStartInfo = detectColdStart();
+            
+            // Log performance metrics for research
+            setTimeout(() => {
+                const perfData = {
+                    platform: platformName,
+                    loadTime: loadTime,
+                    isColdStart: coldStartInfo.isColdStart,
+                    ttfb: coldStartInfo.ttfb,
+                    timestamp: new Date().toISOString(),
+                    url: window.location.href,
+                    userAgent: navigator.userAgent.substring(0, 100)
+                };
+                console.log('COLD_START_RESEARCH_DATA:', JSON.stringify(perfData));
+            }, 1000);
+        });
+        
+        detectPlatform();
         
         // Particle system
         function createParticle() {
