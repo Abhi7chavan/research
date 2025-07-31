@@ -1,0 +1,11 @@
+version: 2
+services:
+  - type: web
+    name: heavy-render-website
+    env: static
+    staticPublishPath: .
+    buildCommand: chmod +x build.sh && ./build.sh
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
