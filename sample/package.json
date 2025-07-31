@@ -4,9 +4,10 @@
   "description": "High-performance heavy rendering website with vanilla JS and Tailwind CSS",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve -s . -l 3000",
-    "build": "echo 'No build process needed for static site'",
-    "dev": "npx serve -s . -l 3000"
+    "start": "serve -s . -p $PORT",
+    "build": "echo 'Static site - no build needed'",
+    "dev": "serve -s . -l 3000",
+    "railway-start": "serve -s . -p ${PORT:-3000}"
   },
   "keywords": [
     "heavy-render",

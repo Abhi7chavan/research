@@ -1,7 +1,5 @@
 #!/bin/bash
-# Render build script
-echo "Starting build process..."
-echo "Installing dependencies..."
+echo "Building static site for Railway..."
+echo "Installing serve package..."
 npm install
 echo "Build completed successfully!"
-echo "Static files are ready to serve"
