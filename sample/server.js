@@ -2,7 +2,6 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,48 +11,68 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// PostgreSQL connection
+// PostgreSQL connection with Railway URL
 const pool = new Pool({
   connectionString: 'postgresql://postgres:cjleOhsDvHzCJifPQPfPbJtxIOrcaoYK@shinkansen.proxy.rlwy.net:59114/railway',
   ssl: { rejectUnauthorized: false }
 });
 
-// Initialize database tables
+// Auto-create database tables
 async function initializeDatabase() {
   try {
+    console.log('🔄 Initializing database...');
+    
+    // Products table
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS performance_logs (
+      CREATE TABLE IF NOT EXISTS products (
         id SERIAL PRIMARY KEY,
-        platform VARCHAR(50) NOT NULL,
-        load_time INTEGER,
-        ttfb INTEGER,
-        is_cold_start BOOLEAN DEFAULT FALSE,
-        memory_usage INTEGER,
-        fps_average INTEGER,
-        user_agent TEXT,
-        ip_address INET,
-        session_id VARCHAR(100),
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        name VARCHAR(255) NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        description TEXT,
+        image_url VARCHAR(500),
+        stock INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
+    // Cart items table
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS user_interactions (
+      CREATE TABLE IF NOT EXISTS cart_items (
         id SERIAL PRIMARY KEY,
         session_id VARCHAR(100) NOT NULL,
-        action VARCHAR(100) NOT NULL,
-        data JSONB,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        product_id INTEGER REFERENCES products(id),
+        quantity INTEGER DEFAULT 1,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
+    // Orders table
     await pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_platform_timestamp ON performance_logs(platform, timestamp);
-      CREATE INDEX IF NOT EXISTS idx_session_id ON performance_logs(session_id);
-      CREATE INDEX IF NOT EXISTS idx_user_session ON user_interactions(session_id);
+      CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        session_id VARCHAR(100) NOT NULL,
+        total_amount DECIMAL(10,2) NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
     `);
     
-    console.log('✅ Database tables initialized successfully');
+    // Insert sample products if none exist
+    const productCount = await pool.query('SELECT COUNT(*) FROM products');
+    if (parseInt(productCount.rows[0].count) === 0) {
+      console.log('📦 Adding sample products...');
+      await pool.query(`
+        INSERT INTO products (name, price, description, image_url, stock) VALUES
+        ('iPhone 15', 999.99, 'Latest iPhone with advanced features', 'https://via.placeholder.com/300x300?text=iPhone+15', 50),
+        ('MacBook Pro', 1999.99, 'Powerful laptop for professionals', 'https://via.placeholder.com/300x300?text=MacBook+Pro', 25),
+        ('AirPods Pro', 249.99, 'Wireless earbuds with noise cancellation', 'https://via.placeholder.com/300x300?text=AirPods+Pro', 100),
+        ('iPad Air', 599.99, 'Versatile tablet for work and play', 'https://via.placeholder.com/300x300?text=iPad+Air', 75),
+        ('Apple Watch', 399.99, 'Smart watch with health monitoring', 'https://via.placeholder.com/300x300?text=Apple+Watch', 60),
+        ('iPhone Case', 29.99, 'Protective case for your iPhone', 'https://via.placeholder.com/300x300?text=iPhone+Case', 200)
+      `);
+    }
+    
+    console.log('✅ Database initialized successfully!');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
   }
@@ -64,238 +83,165 @@ initializeDatabase();
 
 // Routes
 
-// Serve the main page
+// Serve main page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// API: Log performance data
-app.post('/api/performance', async (req, res) => {
+// Get all products
+app.get('/api/products', async (req, res) => {
   try {
-    const {
-      platform,
-      loadTime,
-      ttfb,
-      isColdStart,
-      memoryUsage,
-      fpsAverage,
-      userAgent,
-      sessionId
-    } = req.body;
-    
-    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
-    
-    const result = await pool.query(`
-      INSERT INTO performance_logs 
-      (platform, load_time, ttfb, is_cold_start, memory_usage, fps_average, user_agent, ip_address, session_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING *
-    `, [platform, loadTime, ttfb, isColdStart, memoryUsage, fpsAverage, userAgent, clientIP, sessionId]);
-    
-    res.json({ 
-      success: true, 
-      message: 'Performance data saved successfully',
-      data: result.rows[0] 
-    });
-    
-    console.log(`📊 Performance logged: ${platform} - TTFB: ${ttfb}ms - Cold Start: ${isColdStart}`);
+    const result = await pool.query('SELECT * FROM products ORDER BY name');
+    res.json({ success: true, products: result.rows });
   } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to save performance data' 
-    });
+    console.error('Error fetching products:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch products' });
   }
 });
 
-// API: Log user interactions
-app.post('/api/interaction', async (req, res) => {
+// Add item to cart
+app.post('/api/cart/add', async (req, res) => {
   try {
-    const { sessionId, action, data } = req.body;
+    const { sessionId, productId, quantity = 1 } = req.body;
     
-    const result = await pool.query(`
-      INSERT INTO user_interactions (session_id, action, data)
-      VALUES ($1, $2, $3)
-      RETURNING *
-    `, [sessionId, action, JSON.stringify(data)]);
+    // Check if item already exists in cart
+    const existing = await pool.query(
+      'SELECT * FROM cart_items WHERE session_id = $1 AND product_id = $2',
+      [sessionId, productId]
+    );
     
-    res.json({ 
-      success: true, 
-      message: 'Interaction logged successfully',
-      data: result.rows[0] 
-    });
+    if (existing.rows.length > 0) {
+      // Update quantity
+      await pool.query(
+        'UPDATE cart_items SET quantity = quantity + $1 WHERE session_id = $2 AND product_id = $3',
+        [quantity, sessionId, productId]
+      );
+    } else {
+      // Insert new item
+      await pool.query(
+        'INSERT INTO cart_items (session_id, product_id, quantity) VALUES ($1, $2, $3)',
+        [sessionId, productId, quantity]
+      );
+    }
     
-    console.log(`🔄 Interaction logged: ${action} for session ${sessionId}`);
+    res.json({ success: true, message: 'Item added to cart' });
   } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to log interaction' 
-    });
+    console.error('Error adding to cart:', error);
+    res.status(500).json({ success: false, error: 'Failed to add item to cart' });
   }
 });
 
-// API: Get performance analytics
-app.get('/api/analytics', async (req, res) => {
-  try {
-    const platformStats = await pool.query(`
-      SELECT 
-        platform,
-        COUNT(*) as total_requests,
-        ROUND(AVG(load_time)) as avg_load_time,
-        ROUND(AVG(ttfb)) as avg_ttfb,
-        COUNT(CASE WHEN is_cold_start THEN 1 END) as cold_starts,
-        ROUND(AVG(memory_usage)) as avg_memory,
-        ROUND(AVG(fps_average)) as avg_fps,
-        MIN(timestamp) as first_request,
-        MAX(timestamp) as last_request
-      FROM performance_logs 
-      WHERE timestamp > NOW() - INTERVAL '7 days'
-      GROUP BY platform
-      ORDER BY platform
-    `);
-    
-    const recentPerformance = await pool.query(`
-      SELECT 
-        platform,
-        load_time,
-        ttfb,
-        is_cold_start,
-        memory_usage,
-        timestamp
-      FROM performance_logs 
-      WHERE timestamp > NOW() - INTERVAL '24 hours'
-      ORDER BY timestamp DESC
-      LIMIT 50
-    `);
-    
-    const topInteractions = await pool.query(`
-      SELECT 
-        action,
-        COUNT(*) as count,
-        MAX(timestamp) as last_used
-      FROM user_interactions 
-      WHERE timestamp > NOW() - INTERVAL '7 days'
-      GROUP BY action
-      ORDER BY count DESC
-      LIMIT 10
-    `);
-    
-    res.json({
-      success: true,
-      data: {
-        platformStats: platformStats.rows,
-        recentPerformance: recentPerformance.rows,
-        topInteractions: topInteractions.rows
-      }
-    });
-  } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch analytics' 
-    });
-  }
-});
-
-// API: Get user session data
-app.get('/api/session/:sessionId', async (req, res) => {
+// Get cart items
+app.get('/api/cart/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
     
-    const performanceData = await pool.query(`
-      SELECT * FROM performance_logs 
-      WHERE session_id = $1 
-      ORDER BY timestamp DESC
+    const result = await pool.query(`
+      SELECT c.*, p.name, p.price, p.image_url, (c.quantity * p.price) as total_price
+      FROM cart_items c
+      JOIN products p ON c.product_id = p.id
+      WHERE c.session_id = $1
+      ORDER BY c.added_at DESC
     `, [sessionId]);
     
-    const interactions = await pool.query(`
-      SELECT * FROM user_interactions 
-      WHERE session_id = $1 
-      ORDER BY timestamp DESC
-    `, [sessionId]);
+    const totalAmount = result.rows.reduce((sum, item) => sum + parseFloat(item.total_price), 0);
     
-    res.json({
-      success: true,
-      data: {
-        performance: performanceData.rows,
-        interactions: interactions.rows
-      }
+    res.json({ 
+      success: true, 
+      cartItems: result.rows,
+      totalAmount: totalAmount.toFixed(2)
     });
   } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch session data' 
-    });
+    console.error('Error fetching cart:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch cart' });
   }
 });
 
-// API: Platform comparison
-app.get('/api/comparison', async (req, res) => {
+// Remove item from cart
+app.delete('/api/cart/remove/:sessionId/:productId', async (req, res) => {
   try {
-    const comparison = await pool.query(`
-      SELECT 
-        platform,
-        COUNT(*) as total_tests,
-        ROUND(AVG(ttfb)) as avg_ttfb,
-        ROUND(AVG(load_time)) as avg_load_time,
-        COUNT(CASE WHEN is_cold_start THEN 1 END) as cold_start_count,
-        ROUND(AVG(CASE WHEN is_cold_start THEN ttfb END)) as avg_cold_start_ttfb,
-        ROUND(AVG(memory_usage)) as avg_memory,
-        ROUND(AVG(fps_average)) as avg_fps
-      FROM performance_logs 
-      WHERE timestamp > NOW() - INTERVAL '7 days'
-      GROUP BY platform
-      ORDER BY avg_ttfb ASC
-    `);
+    const { sessionId, productId } = req.params;
     
-    res.json({
-      success: true,
-      data: comparison.rows
-    });
+    await pool.query(
+      'DELETE FROM cart_items WHERE session_id = $1 AND product_id = $2',
+      [sessionId, productId]
+    );
+    
+    res.json({ success: true, message: 'Item removed from cart' });
   } catch (error) {
-    console.error('Database error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to fetch comparison data' 
-    });
+    console.error('Error removing from cart:', error);
+    res.status(500).json({ success: false, error: 'Failed to remove item' });
   }
 });
 
-// Health check endpoint
+// Clear cart
+app.delete('/api/cart/clear/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    await pool.query('DELETE FROM cart_items WHERE session_id = $1', [sessionId]);
+    
+    res.json({ success: true, message: 'Cart cleared' });
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+    res.status(500).json({ success: false, error: 'Failed to clear cart' });
+  }
+});
+
+// Create order
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    
+    // Get cart total
+    const cartResult = await pool.query(`
+      SELECT SUM(c.quantity * p.price) as total
+      FROM cart_items c
+      JOIN products p ON c.product_id = p.id
+      WHERE c.session_id = $1
+    `, [sessionId]);
+    
+    const totalAmount = cartResult.rows[0].total || 0;
+    
+    if (totalAmount > 0) {
+      // Create order
+      const orderResult = await pool.query(
+        'INSERT INTO orders (session_id, total_amount) VALUES ($1, $2) RETURNING *',
+        [sessionId, totalAmount]
+      );
+      
+      // Clear cart after order
+      await pool.query('DELETE FROM cart_items WHERE session_id = $1', [sessionId]);
+      
+      res.json({ 
+        success: true, 
+        message: 'Order created successfully',
+        order: orderResult.rows[0]
+      });
+    } else {
+      res.status(400).json({ success: false, error: 'Cart is empty' });
+    }
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ success: false, error: 'Failed to create order' });
+  }
+});
+
+// Health check
 app.get('/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.json({ 
-      status: 'healthy', 
-      database: 'connected',
-      timestamp: new Date().toISOString()
-    });
+    res.json({ status: 'healthy', database: 'connected' });
   } catch (error) {
-    res.status(500).json({ 
-      status: 'unhealthy', 
-      database: 'disconnected',
-      error: error.message 
-    });
+    res.status(500).json({ status: 'unhealthy', error: error.message });
   }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ 
-    success: false, 
-    error: 'Internal server error' 
-  });
 });
 
 // Start server
 app.listen(port, () => {
-  console.log(`🚀 Heavy Render Server running on port ${port}`);
-  console.log(`📊 Performance API available at /api/analytics`);
-  console.log(`🔍 Health check available at /health`);
-  console.log('✅ Database connection hardcoded for Railway PostgreSQL');
+  console.log(`🚀 Simple Ecommerce Server running on port ${port}`);
+  console.log(`�️  Shop available at http://localhost:${port}`);
+  console.log('✅ Database connection configured for Railway PostgreSQL');
 });
 
 // Graceful shutdown

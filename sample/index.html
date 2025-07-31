@@ -3,652 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heavy Render Website</title>
+    <title>Simple Ecommerce Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s ease-in-out infinite',
-                        'bounce-slow': 'bounce 3s infinite',
-                        'spin-slow': 'spin 8s linear infinite',
-                        'wiggle': 'wiggle 1s ease-in-out infinite',
-                        'fade-in': 'fadeIn 2s ease-in-out',
-                        'slide-up': 'slideUp 1.5s ease-out',
-                        'scale-up': 'scaleUp 2s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        },
-                        wiggle: {
-                            '0%, 100%': { transform: 'rotate(-3deg)' },
-                            '50%': { transform: 'rotate(3deg)' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(30px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(100px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        scaleUp: {
-                            '0%, 100%': { transform: 'scale(1)' },
-                            '50%': { transform: 'scale(1.1)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        .particle {
+        .cart-badge {
             position: absolute;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
             border-radius: 50%;
-            pointer-events: none;
-            animation: particleFloat 10s infinite linear;
-        }
-        
-        @keyframes particleFloat {
-            0% {
-                transform: translateY(100vh) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .neon-glow {
-            box-shadow: 0 0 20px #ff6b6b, 0 0 40px #ff6b6b, 0 0 60px #ff6b6b;
-        }
-        
-        .gradient-text {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientShift 3s ease infinite;
-        }
-        
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        
-        .morphing-shape {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            animation: morph 8s ease-in-out infinite;
-        }
-        
-        @keyframes morph {
-            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-            25% { border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%; }
-            50% { border-radius: 30% 70% 40% 60% / 70% 40% 60% 30%; }
-            75% { border-radius: 70% 30% 60% 40% / 30% 60% 40% 70%; }
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
         }
     </style>
 </head>
-<body class="bg-black text-white overflow-x-hidden">
-    <!-- Particle System Container -->
-    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0"></div>
-    
-    <!-- Hero Section with Complex Animations -->
-    <section class="relative min-h-screen flex items-center justify-center">
-        <!-- Animated Background Elements -->
-        <div class="absolute inset-0">
-            <div class="morphing-shape absolute top-20 left-20 w-64 h-64 opacity-20 animate-spin-slow"></div>
-            <div class="morphing-shape absolute bottom-20 right-20 w-48 h-48 opacity-30 animate-bounce-slow"></div>
-            <div class="morphing-shape absolute top-1/2 left-1/4 w-32 h-32 opacity-25 animate-pulse-slow"></div>
-        </div>
-        
-        <!-- Main Hero Content -->
-        <div class="text-center z-10 animate-fade-in">
-            <h1 class="text-8xl font-bold gradient-text mb-8 animate-float">HEAVY RENDER</h1>
-            <p class="text-2xl mb-12 animate-slide-up opacity-80">Experience the Ultimate Performance Challenge</p>
-            <button id="heavy-render-btn" class="glass-effect px-12 py-4 text-xl font-semibold rounded-full neon-glow hover:scale-110 transition-all duration-300 animate-wiggle">
-                Start Heavy Rendering
-            </button>
-        </div>
-    </section>
-    
-    <!-- Complex Grid Section -->
-    <section class="py-20 px-8">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-6xl font-bold text-center mb-16 gradient-text">Dynamic Elements</h2>
-            <div id="dynamic-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <!-- Dynamic cards will be generated here -->
-            </div>
-        </div>
-    </section>
-    
-    <!-- Canvas Animation Section -->
-    <section class="py-20">
-        <div class="max-w-6xl mx-auto text-center">
-            <h2 class="text-5xl font-bold mb-12 gradient-text">Complex Canvas Animations</h2>
-            <canvas id="heavy-canvas" class="w-full h-96 border border-gray-700 rounded-lg glass-effect"></canvas>
-        </div>
-    </section>
-    
-    <!-- Heavy DOM Manipulation Section -->
-    <section class="py-20 px-8">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-5xl font-bold text-center mb-12 gradient-text">Heavy DOM Operations</h2>
-            <div class="text-center mb-8">
-                <button id="create-elements-btn" class="glass-effect px-8 py-3 mr-4 rounded-lg hover:neon-glow transition-all">
-                    Create 1000 Elements
-                </button>
-                <button id="animate-elements-btn" class="glass-effect px-8 py-3 mr-4 rounded-lg hover:neon-glow transition-all">
-                    Animate All Elements
-                </button>
-                <button id="clear-elements-btn" class="glass-effect px-8 py-3 rounded-lg hover:neon-glow transition-all">
-                    Clear Elements
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">🛍️ Simple Shop</h1>
+            <div class="relative">
+                <button id="cart-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    🛒 Cart
+                    <span id="cart-count" class="cart-badge hidden">0</span>
                 </button>
             </div>
-            <div id="heavy-dom-container" class="grid grid-cols-20 gap-1 justify-center"></div>
         </div>
-    </section>
-    
-    <!-- Performance Monitor -->
-    <div class="fixed top-4 right-4 glass-effect p-4 rounded-lg z-50">
-        <h3 class="text-lg font-bold mb-2">Performance Monitor</h3>
-        <div id="fps-counter" class="text-green-400">FPS: 60</div>
-        <div id="element-counter" class="text-blue-400">Elements: 0</div>
-        <div id="memory-usage" class="text-yellow-400">Memory: 0MB</div>
-        <div id="platform-info" class="text-purple-400">Platform: Detecting...</div>
-        <div id="load-time" class="text-orange-400">Load: 0ms</div>
-        <button id="view-analytics" class="mt-2 px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
-            View Analytics
-        </button>
-    </div>
+    </header>
 
-    <!-- Analytics Modal -->
-    <div id="analytics-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[100]">
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="products-grid">
+            <!-- Products will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="glass-effect p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold gradient-text">Performance Analytics</h2>
-                    <button id="close-analytics" class="text-white hover:text-red-400 text-2xl">&times;</button>
-                </div>
-                <div id="analytics-content">
-                    <div class="text-center text-gray-400">Loading analytics...</div>
+            <div class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold">Shopping Cart</h2>
+                        <button id="close-cart" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+                    
+                    <div id="cart-items">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                    
+                    <div class="border-t pt-4 mt-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xl font-bold">Total: $<span id="cart-total">0.00</span></span>
+                        </div>
+                        <div class="flex gap-4">
+                            <button id="clear-cart" class="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
+                                Clear Cart
+                            </button>
+                            <button id="checkout-btn" class="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
+                                Checkout
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Loading indicator -->
+    <div id="loading" class="fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg hidden">
+        Loading...
+    </div>
+
+    <!-- Success message -->
+    <div id="success-msg" class="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg hidden">
+        Success!
+    </div>
+
     <script>
-        // Performance monitoring
-        let frameCount = 0;
-        let lastTime = performance.now();
-        let fps = 60;
+        // Generate session ID
+        const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         
-        function updateFPS() {
-            frameCount++;
-            const currentTime = performance.now();
-            if (currentTime - lastTime >= 1000) {
-                fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
-                document.getElementById('fps-counter').textContent = `FPS: ${fps}`;
-                frameCount = 0;
-                lastTime = currentTime;
-            }
-            requestAnimationFrame(updateFPS);
-        }
-        updateFPS();
-        
-        // Platform detection and performance tracking
-        const loadStartTime = performance.now();
-        let platformName = 'Unknown';
-        
-        // Detect deployment platform
-        function detectPlatform() {
-            const hostname = window.location.hostname;
-            if (hostname.includes('onrender.com')) {
-                platformName = 'Render';
-            } else if (hostname.includes('railway.app')) {
-                platformName = 'Railway';
-            } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-                platformName = 'Local';
-            } else {
-                platformName = 'Custom Domain';
-            }
-            document.getElementById('platform-info').textContent = `Platform: ${platformName}`;
-        }
-        
-        // Cold start detection
-        function detectColdStart() {
-            const navigation = performance.getEntriesByType('navigation')[0];
-            const ttfb = Math.round(navigation.responseStart - navigation.requestStart);
-            
-            // Heuristic: Cold start if TTFB > 3 seconds
-            const isColdStart = ttfb > 3000;
-            
-            if (isColdStart) {
-                console.log(`🧊 COLD START DETECTED on ${platformName}: TTFB = ${ttfb}ms`);
-                
-                // Add cold start indicator to UI
-                const indicator = document.createElement('div');
-                indicator.className = 'fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50';
-                indicator.textContent = `❄️ Cold Start: ${ttfb}ms`;
-                document.body.appendChild(indicator);
-                
-                setTimeout(() => indicator.remove(), 10000);
-            }
-            
-            return { isColdStart, ttfb };
-        }
-        
-        // Track page load performance
-        window.addEventListener('load', () => {
-            const loadTime = Math.round(performance.now() - loadStartTime);
-            document.getElementById('load-time').textContent = `Load: ${loadTime}ms`;
-            
-            // Detect cold start
-            const coldStartInfo = detectColdStart();
-            
-            // Log performance metrics for research
-            setTimeout(() => {
-                const perfData = {
-                    platform: platformName,
-                    loadTime: loadTime,
-                    isColdStart: coldStartInfo.isColdStart,
-                    ttfb: coldStartInfo.ttfb,
-                    timestamp: new Date().toISOString(),
-                    url: window.location.href,
-                    userAgent: navigator.userAgent.substring(0, 100)
-                };
-                console.log('COLD_START_RESEARCH_DATA:', JSON.stringify(perfData));
-            }, 1000);
-        });
-        
-        detectPlatform();
-        
-        // Particle system
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + 'vw';
-            particle.style.width = particle.style.height = Math.random() * 10 + 5 + 'px';
-            particle.style.animationDuration = Math.random() * 5 + 5 + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            document.getElementById('particles-container').appendChild(particle);
-            
-            setTimeout(() => particle.remove(), 12000);
-        }
-        
-        // Create particles continuously
-        setInterval(createParticle, 300);
-        
-        // Heavy canvas animation
-        const canvas = document.getElementById('heavy-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        
-        const balls = [];
-        for (let i = 0; i < 100; i++) {
-            balls.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 4,
-                vy: (Math.random() - 0.5) * 4,
-                radius: Math.random() * 20 + 5,
-                color: `hsl(${Math.random() * 360}, 70%, 60%)`
-            });
-        }
-        
-        function animateCanvas() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            balls.forEach(ball => {
-                ball.x += ball.vx;
-                ball.y += ball.vy;
-                
-                if (ball.x <= ball.radius || ball.x >= canvas.width - ball.radius) ball.vx *= -1;
-                if (ball.y <= ball.radius || ball.y >= canvas.height - ball.radius) ball.vy *= -1;
-                
-                ctx.beginPath();
-                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-                ctx.fillStyle = ball.color;
-                ctx.fill();
-                
-                // Add glow effect
-                ctx.shadowColor = ball.color;
-                ctx.shadowBlur = 20;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-            
-            requestAnimationFrame(animateCanvas);
-        }
-        animateCanvas();
-        
-        // Dynamic grid generation
-        function generateDynamicCards() {
-            const grid = document.getElementById('dynamic-grid');
-            for (let i = 0; i < 50; i++) {
-                const card = document.createElement('div');
-                card.className = `glass-effect p-6 rounded-lg transform hover:scale-105 transition-all duration-300 animate-fade-in`;
-                card.style.animationDelay = `${i * 0.1}s`;
-                card.innerHTML = `
-                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-4 animate-spin-slow"></div>
-                    <h3 class="text-xl font-bold mb-2 gradient-text">Card ${i + 1}</h3>
-                    <p class="text-gray-300">Heavy rendering element with complex animations and effects.</p>
-                    <div class="mt-4 w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-green-400 to-blue-500 animate-pulse" style="width: ${Math.random() * 100}%"></div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            }
-        }
-        generateDynamicCards();
-        
-        // Heavy DOM manipulation
-        let elementCount = 0;
-        
-        document.getElementById('create-elements-btn').addEventListener('click', async () => {
-            const container = document.getElementById('heavy-dom-container');
-            const startTime = performance.now();
-            
-            for (let i = 0; i < 1000; i++) {
-                const element = document.createElement('div');
-                element.className = 'w-4 h-4 bg-gradient-to-r from-red-500 to-yellow-500 rounded animate-pulse-slow';
-                element.style.animationDelay = `${Math.random() * 2}s`;
-                container.appendChild(element);
-                elementCount++;
-            }
-            
-            const endTime = performance.now();
-            document.getElementById('element-counter').textContent = `Elements: ${elementCount}`;
-            
-            // Log interaction to database
-            if (window.performanceMonitor) {
-                await window.performanceMonitor.logInteraction('create_elements', {
-                    elementCount: 1000,
-                    executionTime: Math.round(endTime - startTime),
-                    totalElements: elementCount
-                });
-            }
-        });
-        
-        document.getElementById('animate-elements-btn').addEventListener('click', async () => {
-            const elements = document.querySelectorAll('#heavy-dom-container > div');
-            const startTime = performance.now();
-            
-            elements.forEach((element, index) => {
-                element.style.animation = 'none';
-                setTimeout(() => {
-                    element.style.animation = `bounce 1s ease-in-out ${index * 0.001}s infinite`;
-                }, 10);
-            });
-            
-            const endTime = performance.now();
-            
-            // Log interaction to database
-            if (window.performanceMonitor) {
-                await window.performanceMonitor.logInteraction('animate_elements', {
-                    animatedElements: elements.length,
-                    executionTime: Math.round(endTime - startTime)
-                });
-            }
-        });
-        
-        document.getElementById('clear-elements-btn').addEventListener('click', async () => {
-            const elementsToRemove = document.querySelectorAll('#heavy-dom-container > div').length;
-            const startTime = performance.now();
-            
-            document.getElementById('heavy-dom-container').innerHTML = '';
-            elementCount = 0;
-            document.getElementById('element-counter').textContent = `Elements: ${elementCount}`;
-            
-            const endTime = performance.now();
-            
-            // Log interaction to database
-            if (window.performanceMonitor) {
-                await window.performanceMonitor.logInteraction('clear_elements', {
-                    removedElements: elementsToRemove,
-                    executionTime: Math.round(endTime - startTime)
-                });
-            }
-        });
-        
-        // Heavy render button action
-        document.getElementById('heavy-render-btn').addEventListener('click', async () => {
-            const startTime = performance.now();
-            
-            // Create intensive visual effects
-            for (let i = 0; i < 50; i++) {
-                setTimeout(() => createParticle(), i * 50);
-            }
-            
-            // Add screen flash effect
-            const flash = document.createElement('div');
-            flash.className = 'fixed inset-0 bg-white pointer-events-none z-50';
-            flash.style.animation = 'flash 0.5s ease-out';
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 500);
-            
-            const endTime = performance.now();
-            
-            // Log interaction to database
-            if (window.performanceMonitor) {
-                await window.performanceMonitor.logInteraction('heavy_render_trigger', {
-                    particlesCreated: 50,
-                    executionTime: Math.round(endTime - startTime),
-                    effectType: 'particles_and_flash'
-                });
-            }
-        });
-        
-        // Memory usage estimation (rough)
-        setInterval(() => {
-            const memoryInfo = performance.memory;
-            if (memoryInfo) {
-                const usedMB = Math.round(memoryInfo.usedJSHeapSize / 1048576);
-                document.getElementById('memory-usage').textContent = `Memory: ${usedMB}MB`;
-            }
-        }, 1000);
-        
-        // Add random visual effects every few seconds
-        setInterval(() => {
-            const randomEffect = Math.floor(Math.random() * 3);
-            switch (randomEffect) {
-                case 0:
-                    document.body.style.filter = 'hue-rotate(30deg)';
-                    setTimeout(() => document.body.style.filter = 'none', 1000);
-                    break;
-                case 1:
-                    for (let i = 0; i < 10; i++) {
-                        setTimeout(() => createParticle(), i * 100);
-                    }
-                    break;
-                case 2:
-                    const elements = document.querySelectorAll('.glass-effect');
-                    elements.forEach(el => {
-                        el.style.animation = 'scale-up 1s ease-in-out';
-                        setTimeout(() => el.style.animation = '', 1000);
-                    });
-                    break;
-            }
-        }, 5000);
-        
-        // Add flash animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes flash {
-                0% { opacity: 0; }
-                50% { opacity: 0.3; }
-                100% { opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Scroll-triggered animations
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            const morphingShapes = document.querySelectorAll('.morphing-shape');
-            morphingShapes.forEach((shape, index) => {
-                shape.style.transform = `rotate(${scrollY * 0.1 * (index + 1)}deg) scale(${1 + scrollY * 0.0005})`;
-            });
-        });
+        // DOM elements
+        const productsGrid = document.getElementById('products-grid');
+        const cartBtn = document.getElementById('cart-btn');
+        const cartModal = document.getElementById('cart-modal');
+        const closeCart = document.getElementById('close-cart');
+        const cartItems = document.getElementById('cart-items');
+        const cartCount = document.getElementById('cart-count');
+        const cartTotal = document.getElementById('cart-total');
+        const clearCartBtn = document.getElementById('clear-cart');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const loading = document.getElementById('loading');
+        const successMsg = document.getElementById('success-msg');
 
-        // Analytics functionality
-        document.getElementById('view-analytics').addEventListener('click', async () => {
-            document.getElementById('analytics-modal').classList.remove('hidden');
-            await loadAnalytics();
-        });
+        // Utility functions
+        function showLoading() {
+            loading.classList.remove('hidden');
+        }
 
-        document.getElementById('close-analytics').addEventListener('click', () => {
-            document.getElementById('analytics-modal').classList.add('hidden');
-        });
+        function hideLoading() {
+            loading.classList.add('hidden');
+        }
 
-        // Close modal when clicking outside
-        document.getElementById('analytics-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'analytics-modal') {
-                document.getElementById('analytics-modal').classList.add('hidden');
-            }
-        });
+        function showSuccess(message = 'Success!') {
+            successMsg.textContent = message;
+            successMsg.classList.remove('hidden');
+            setTimeout(() => successMsg.classList.add('hidden'), 3000);
+        }
 
-        async function loadAnalytics() {
+        // Load products
+        async function loadProducts() {
+            showLoading();
             try {
-                const response = await fetch('/api/analytics');
-                const result = await response.json();
+                const response = await fetch('/api/products');
+                const data = await response.json();
                 
-                if (result.success) {
-                    displayAnalytics(result.data);
-                } else {
-                    document.getElementById('analytics-content').innerHTML = 
-                        '<div class="text-red-400">Failed to load analytics data</div>';
+                if (data.success) {
+                    displayProducts(data.products);
                 }
             } catch (error) {
-                console.error('Error loading analytics:', error);
-                document.getElementById('analytics-content').innerHTML = 
-                    '<div class="text-red-400">Error loading analytics: ' + error.message + '</div>';
+                console.error('Error loading products:', error);
             }
+            hideLoading();
         }
 
-        function displayAnalytics(data) {
-            const { platformStats, recentPerformance, topInteractions } = data;
-            
-            let html = `
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="text-xl font-bold mb-3 text-green-400">Platform Performance (Last 7 Days)</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="border-b border-gray-600">
-                                        <th class="text-left p-2">Platform</th>
-                                        <th class="text-left p-2">Requests</th>
-                                        <th class="text-left p-2">Avg TTFB</th>
-                                        <th class="text-left p-2">Avg Load</th>
-                                        <th class="text-left p-2">Cold Starts</th>
-                                        <th class="text-left p-2">Avg Memory</th>
-                                        <th class="text-left p-2">Avg FPS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-            `;
-            
-            platformStats.forEach(stat => {
-                html += `
-                    <tr class="border-b border-gray-700">
-                        <td class="p-2 font-semibold text-purple-400">${stat.platform}</td>
-                        <td class="p-2">${stat.total_requests}</td>
-                        <td class="p-2">${stat.avg_ttfb}ms</td>
-                        <td class="p-2">${stat.avg_load_time}ms</td>
-                        <td class="p-2">${stat.cold_starts}</td>
-                        <td class="p-2">${stat.avg_memory}MB</td>
-                        <td class="p-2">${stat.avg_fps}</td>
-                    </tr>
-                `;
-            });
-            
-            html += `
-                                </tbody>
-                            </table>
+        // Display products
+        function displayProducts(products) {
+            productsGrid.innerHTML = products.map(product => `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                    <img src="${product.image_url}" alt="${product.name}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold mb-2">${product.name}</h3>
+                        <p class="text-gray-600 text-sm mb-3">${product.description}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-green-600">$${product.price}</span>
+                            <button onclick="addToCart(${product.id})" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                                Add to Cart
+                            </button>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <h3 class="text-xl font-bold mb-3 text-blue-400">Top User Interactions (Last 7 Days)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            `;
-            
-            topInteractions.forEach(interaction => {
-                html += `
-                    <div class="bg-gray-800 p-3 rounded">
-                        <div class="font-semibold text-yellow-400">${interaction.action.replace(/_/g, ' ').toUpperCase()}</div>
-                        <div class="text-sm text-gray-300">${interaction.count} times</div>
-                        <div class="text-xs text-gray-500">Last used: ${new Date(interaction.last_used).toLocaleString()}</div>
-                    </div>
-                `;
-            });
-            
-            html += `
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h3 class="text-xl font-bold mb-3 text-orange-400">Recent Performance Data (Last 24 Hours)</h3>
-                        <div class="max-h-64 overflow-y-auto">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="border-b border-gray-600 sticky top-0 bg-black">
-                                        <th class="text-left p-2">Time</th>
-                                        <th class="text-left p-2">Platform</th>
-                                        <th class="text-left p-2">TTFB</th>
-                                        <th class="text-left p-2">Load Time</th>
-                                        <th class="text-left p-2">Cold Start</th>
-                                        <th class="text-left p-2">Memory</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-            `;
-            
-            recentPerformance.forEach(perf => {
-                html += `
-                    <tr class="border-b border-gray-700 text-xs">
-                        <td class="p-2">${new Date(perf.timestamp).toLocaleTimeString()}</td>
-                        <td class="p-2">${perf.platform}</td>
-                        <td class="p-2 ${perf.ttfb > 2000 ? 'text-red-400' : 'text-green-400'}">${perf.ttfb}ms</td>
-                        <td class="p-2">${perf.load_time}ms</td>
-                        <td class="p-2">${perf.is_cold_start ? '❄️ YES' : '✅ NO'}</td>
-                        <td class="p-2">${perf.memory_usage}MB</td>
-                    </tr>
-                `;
-            });
-            
-            html += `
-                                </tbody>
-                            </table>
+                        <div class="mt-2 text-sm text-gray-500">
+                            Stock: ${product.stock} available
                         </div>
                     </div>
                 </div>
-            `;
-            
-            document.getElementById('analytics-content').innerHTML = html;
+            `).join('');
         }
+
+        // Add to cart
+        async function addToCart(productId) {
+            showLoading();
+            try {
+                const response = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId, productId, quantity: 1 })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Item added to cart!');
+                    updateCartCount();
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+            }
+            hideLoading();
+        }
+
+        // Update cart count
+        async function updateCartCount() {
+            try {
+                const response = await fetch(`/api/cart/${sessionId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const count = data.cartItems.length;
+                    if (count > 0) {
+                        cartCount.textContent = count;
+                        cartCount.classList.remove('hidden');
+                    } else {
+                        cartCount.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating cart count:', error);
+            }
+        }
+
+        // Load cart items
+        async function loadCart() {
+            showLoading();
+            try {
+                const response = await fetch(`/api/cart/${sessionId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayCartItems(data.cartItems);
+                    cartTotal.textContent = data.totalAmount;
+                }
+            } catch (error) {
+                console.error('Error loading cart:', error);
+            }
+            hideLoading();
+        }
+
+        // Display cart items
+        function displayCartItems(items) {
+            if (items.length === 0) {
+                cartItems.innerHTML = '<p class="text-gray-500 text-center py-4">Your cart is empty</p>';
+                return;
+            }
+
+            cartItems.innerHTML = items.map(item => `
+                <div class="flex items-center gap-4 py-4 border-b">
+                    <img src="${item.image_url}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${item.name}</h4>
+                        <p class="text-gray-600">$${item.price} x ${item.quantity}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">$${item.total_price}</p>
+                        <button onclick="removeFromCart(${item.product_id})" 
+                                class="text-red-600 hover:text-red-800 text-sm">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Remove from cart
+        async function removeFromCart(productId) {
+            showLoading();
+            try {
+                const response = await fetch(`/api/cart/remove/${sessionId}/${productId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Item removed from cart');
+                    loadCart();
+                    updateCartCount();
+                }
+            } catch (error) {
+                console.error('Error removing from cart:', error);
+            }
+            hideLoading();
+        }
+
+        // Clear cart
+        async function clearCart() {
+            if (!confirm('Are you sure you want to clear your cart?')) return;
+            
+            showLoading();
+            try {
+                const response = await fetch(`/api/cart/clear/${sessionId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Cart cleared');
+                    loadCart();
+                    updateCartCount();
+                }
+            } catch (error) {
+                console.error('Error clearing cart:', error);
+            }
+            hideLoading();
+        }
+
+        // Checkout
+        async function checkout() {
+            if (!confirm('Proceed with checkout?')) return;
+            
+            showLoading();
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Order placed successfully!');
+                    loadCart();
+                    updateCartCount();
+                    cartModal.classList.add('hidden');
+                } else {
+                    alert(data.error || 'Checkout failed');
+                }
+            } catch (error) {
+                console.error('Error during checkout:', error);
+                alert('Checkout failed');
+            }
+            hideLoading();
+        }
+
+        // Event listeners
+        cartBtn.addEventListener('click', () => {
+            cartModal.classList.remove('hidden');
+            loadCart();
+        });
+
+        closeCart.addEventListener('click', () => {
+            cartModal.classList.add('hidden');
+        });
+
+        cartModal.addEventListener('click', (e) => {
+            if (e.target === cartModal) {
+                cartModal.classList.add('hidden');
+            }
+        });
+
+        clearCartBtn.addEventListener('click', clearCart);
+        checkoutBtn.addEventListener('click', checkout);
+
+        // Initialize
+        loadProducts();
+        updateCartCount();
+
+        console.log('🛍️ Simple Ecommerce Store loaded!');
+        console.log('🔗 Session ID:', sessionId);
+        console.log('💾 Database: PostgreSQL on Railway');
     </script>
-    
-    <!-- Enhanced Performance Monitoring -->
-    <script src="performance-logger.js"></script>
-    
-    <!-- Test Data Script (for development) -->
-    <script src="test-data.js"></script>
 </body>
 </html>

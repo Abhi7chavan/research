@@ -1,29 +1,24 @@
 {
-  "name": "heavy-render-website",
+  "name": "simple-ecommerce",
   "version": "1.0.0",
-  "description": "High-performance heavy rendering website with vanilla JS and Tailwind CSS",
+  "description": "Simple ecommerce website with cart functionality",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "echo 'Static site - no build needed'",
-    "dev": "nodemon server.js",
-    "railway-start": "node server.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [
-    "heavy-render",
-    "performance",
-    "animations",
-    "vanilla-js",
-    "tailwind",
-    "canvas"
+    "ecommerce",
+    "cart",
+    "postgresql",
+    "express"
   ],
-  "author": "Your Name",
+  "author": "Railway User",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
     "pg": "^8.11.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
