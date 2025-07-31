@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname)));
 
 // PostgreSQL connection with Railway URL
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:cjleOhsDvHzCJifPQPfPbJtxIOrcaoYK@shinkansen.proxy.rlwy.net:59114/railway',
+  connectionString: 'postgresql://postgres:TMuFIuceyoohszjypofLlbMSYzSXNHfn@centerbeam.proxy.rlwy.net:34267/railway',
   ssl: { rejectUnauthorized: false }
 });
 
