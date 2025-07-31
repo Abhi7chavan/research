@@ -2,12 +2,12 @@
   "name": "heavy-render-website",
   "version": "1.0.0",
   "description": "High-performance heavy rendering website with vanilla JS and Tailwind CSS",
-  "main": "index.html",
+  "main": "server.js",
   "scripts": {
-    "start": "serve -s . -p $PORT",
+    "start": "node server.js",
     "build": "echo 'Static site - no build needed'",
-    "dev": "serve -s . -l 3000",
-    "railway-start": "serve -s . -p ${PORT:-3000}"
+    "dev": "nodemon server.js",
+    "railway-start": "node server.js"
   },
   "keywords": [
     "heavy-render",
@@ -20,9 +20,13 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "serve": "^14.2.1"
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "path": "^0.12.7"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   }
 }

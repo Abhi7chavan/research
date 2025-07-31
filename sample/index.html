@@ -170,6 +170,24 @@
         <div id="memory-usage" class="text-yellow-400">Memory: 0MB</div>
         <div id="platform-info" class="text-purple-400">Platform: Detecting...</div>
         <div id="load-time" class="text-orange-400">Load: 0ms</div>
+        <button id="view-analytics" class="mt-2 px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+            View Analytics
+        </button>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div id="analytics-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[100]">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glass-effect p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold gradient-text">Performance Analytics</h2>
+                    <button id="close-analytics" class="text-white hover:text-red-400 text-2xl">&times;</button>
+                </div>
+                <div id="analytics-content">
+                    <div class="text-center text-gray-400">Loading analytics...</div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script>
@@ -342,8 +360,10 @@
         // Heavy DOM manipulation
         let elementCount = 0;
         
-        document.getElementById('create-elements-btn').addEventListener('click', () => {
+        document.getElementById('create-elements-btn').addEventListener('click', async () => {
             const container = document.getElementById('heavy-dom-container');
+            const startTime = performance.now();
+            
             for (let i = 0; i < 1000; i++) {
                 const element = document.createElement('div');
                 element.className = 'w-4 h-4 bg-gradient-to-r from-red-500 to-yellow-500 rounded animate-pulse-slow';
@@ -351,27 +371,65 @@
                 container.appendChild(element);
                 elementCount++;
             }
+            
+            const endTime = performance.now();
             document.getElementById('element-counter').textContent = `Elements: ${elementCount}`;
+            
+            // Log interaction to database
+            if (window.performanceMonitor) {
+                await window.performanceMonitor.logInteraction('create_elements', {
+                    elementCount: 1000,
+                    executionTime: Math.round(endTime - startTime),
+                    totalElements: elementCount
+                });
+            }
         });
         
-        document.getElementById('animate-elements-btn').addEventListener('click', () => {
+        document.getElementById('animate-elements-btn').addEventListener('click', async () => {
             const elements = document.querySelectorAll('#heavy-dom-container > div');
+            const startTime = performance.now();
+            
             elements.forEach((element, index) => {
                 element.style.animation = 'none';
                 setTimeout(() => {
                     element.style.animation = `bounce 1s ease-in-out ${index * 0.001}s infinite`;
                 }, 10);
             });
+            
+            const endTime = performance.now();
+            
+            // Log interaction to database
+            if (window.performanceMonitor) {
+                await window.performanceMonitor.logInteraction('animate_elements', {
+                    animatedElements: elements.length,
+                    executionTime: Math.round(endTime - startTime)
+                });
+            }
         });
         
-        document.getElementById('clear-elements-btn').addEventListener('click', () => {
+        document.getElementById('clear-elements-btn').addEventListener('click', async () => {
+            const elementsToRemove = document.querySelectorAll('#heavy-dom-container > div').length;
+            const startTime = performance.now();
+            
             document.getElementById('heavy-dom-container').innerHTML = '';
             elementCount = 0;
             document.getElementById('element-counter').textContent = `Elements: ${elementCount}`;
+            
+            const endTime = performance.now();
+            
+            // Log interaction to database
+            if (window.performanceMonitor) {
+                await window.performanceMonitor.logInteraction('clear_elements', {
+                    removedElements: elementsToRemove,
+                    executionTime: Math.round(endTime - startTime)
+                });
+            }
         });
         
         // Heavy render button action
-        document.getElementById('heavy-render-btn').addEventListener('click', () => {
+        document.getElementById('heavy-render-btn').addEventListener('click', async () => {
+            const startTime = performance.now();
+            
             // Create intensive visual effects
             for (let i = 0; i < 50; i++) {
                 setTimeout(() => createParticle(), i * 50);
@@ -383,6 +441,17 @@
             flash.style.animation = 'flash 0.5s ease-out';
             document.body.appendChild(flash);
             setTimeout(() => flash.remove(), 500);
+            
+            const endTime = performance.now();
+            
+            // Log interaction to database
+            if (window.performanceMonitor) {
+                await window.performanceMonitor.logInteraction('heavy_render_trigger', {
+                    particlesCreated: 50,
+                    executionTime: Math.round(endTime - startTime),
+                    effectType: 'particles_and_flash'
+                });
+            }
         });
         
         // Memory usage estimation (rough)
@@ -436,6 +505,144 @@
                 shape.style.transform = `rotate(${scrollY * 0.1 * (index + 1)}deg) scale(${1 + scrollY * 0.0005})`;
             });
         });
+
+        // Analytics functionality
+        document.getElementById('view-analytics').addEventListener('click', async () => {
+            document.getElementById('analytics-modal').classList.remove('hidden');
+            await loadAnalytics();
+        });
+
+        document.getElementById('close-analytics').addEventListener('click', () => {
+            document.getElementById('analytics-modal').classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('analytics-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'analytics-modal') {
+                document.getElementById('analytics-modal').classList.add('hidden');
+            }
+        });
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/api/analytics');
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayAnalytics(result.data);
+                } else {
+                    document.getElementById('analytics-content').innerHTML = 
+                        '<div class="text-red-400">Failed to load analytics data</div>';
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                document.getElementById('analytics-content').innerHTML = 
+                    '<div class="text-red-400">Error loading analytics: ' + error.message + '</div>';
+            }
+        }
+
+        function displayAnalytics(data) {
+            const { platformStats, recentPerformance, topInteractions } = data;
+            
+            let html = `
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-3 text-green-400">Platform Performance (Last 7 Days)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-600">
+                                        <th class="text-left p-2">Platform</th>
+                                        <th class="text-left p-2">Requests</th>
+                                        <th class="text-left p-2">Avg TTFB</th>
+                                        <th class="text-left p-2">Avg Load</th>
+                                        <th class="text-left p-2">Cold Starts</th>
+                                        <th class="text-left p-2">Avg Memory</th>
+                                        <th class="text-left p-2">Avg FPS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+            
+            platformStats.forEach(stat => {
+                html += `
+                    <tr class="border-b border-gray-700">
+                        <td class="p-2 font-semibold text-purple-400">${stat.platform}</td>
+                        <td class="p-2">${stat.total_requests}</td>
+                        <td class="p-2">${stat.avg_ttfb}ms</td>
+                        <td class="p-2">${stat.avg_load_time}ms</td>
+                        <td class="p-2">${stat.cold_starts}</td>
+                        <td class="p-2">${stat.avg_memory}MB</td>
+                        <td class="p-2">${stat.avg_fps}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold mb-3 text-blue-400">Top User Interactions (Last 7 Days)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            `;
+            
+            topInteractions.forEach(interaction => {
+                html += `
+                    <div class="bg-gray-800 p-3 rounded">
+                        <div class="font-semibold text-yellow-400">${interaction.action.replace(/_/g, ' ').toUpperCase()}</div>
+                        <div class="text-sm text-gray-300">${interaction.count} times</div>
+                        <div class="text-xs text-gray-500">Last used: ${new Date(interaction.last_used).toLocaleString()}</div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold mb-3 text-orange-400">Recent Performance Data (Last 24 Hours)</h3>
+                        <div class="max-h-64 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-600 sticky top-0 bg-black">
+                                        <th class="text-left p-2">Time</th>
+                                        <th class="text-left p-2">Platform</th>
+                                        <th class="text-left p-2">TTFB</th>
+                                        <th class="text-left p-2">Load Time</th>
+                                        <th class="text-left p-2">Cold Start</th>
+                                        <th class="text-left p-2">Memory</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+            
+            recentPerformance.forEach(perf => {
+                html += `
+                    <tr class="border-b border-gray-700 text-xs">
+                        <td class="p-2">${new Date(perf.timestamp).toLocaleTimeString()}</td>
+                        <td class="p-2">${perf.platform}</td>
+                        <td class="p-2 ${perf.ttfb > 2000 ? 'text-red-400' : 'text-green-400'}">${perf.ttfb}ms</td>
+                        <td class="p-2">${perf.load_time}ms</td>
+                        <td class="p-2">${perf.is_cold_start ? '❄️ YES' : '✅ NO'}</td>
+                        <td class="p-2">${perf.memory_usage}MB</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('analytics-content').innerHTML = html;
+        }
     </script>
     
     <!-- Enhanced Performance Monitoring -->

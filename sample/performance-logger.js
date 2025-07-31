@@ -1,10 +1,68 @@
-// Enhanced Performance Monitor for Accurate Metrics
+// Enhanced Performance Monitor for Accurate Metrics with Database Integration
 class AccuratePerformanceMonitor {
     constructor() {
         this.metrics = {};
         this.startTime = performance.now();
         this.observer = null;
+        this.sessionId = this.generateSessionId();
         this.setupObservers();
+    }
+
+    generateSessionId() {
+        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    async logToDatabase(endpoint, data) {
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...data,
+                    sessionId: this.sessionId,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Data saved to database:', result.message);
+            return result;
+        } catch (error) {
+            console.warn('❌ Failed to save to database:', error);
+            // Store in localStorage as backup
+            this.storeLocally(endpoint, data);
+        }
+    }
+
+    storeLocally(endpoint, data) {
+        try {
+            const key = endpoint.includes('performance') ? 'performance_logs' : 'interaction_logs';
+            const stored = localStorage.getItem(key) || '[]';
+            const logs = JSON.parse(stored);
+            
+            logs.push({
+                ...data,
+                sessionId: this.sessionId,
+                timestamp: new Date().toISOString(),
+                pending: true
+            });
+            
+            // Keep only last 50 entries
+            if (logs.length > 50) {
+                logs.splice(0, logs.length - 50);
+            }
+            
+            localStorage.setItem(key, JSON.stringify(logs));
+            console.log('💾 Data stored locally as backup');
+        } catch (error) {
+            console.warn('Failed to store locally:', error);
+        }
     }
 
     setupObservers() {
@@ -295,17 +353,18 @@ class AccuratePerformanceMonitor {
         // Monitor FPS
         let frameCount = 0;
         let lastTime = performance.now();
+        this.currentFPS = 60;
         
         const updateFPS = () => {
             frameCount++;
             const currentTime = performance.now();
             
             if (currentTime - lastTime >= 1000) {
-                const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+                this.currentFPS = Math.round((frameCount * 1000) / (currentTime - lastTime));
                 const fpsElement = document.getElementById('fps-counter');
                 if (fpsElement) {
-                    fpsElement.textContent = `FPS: ${fps}`;
-                    fpsElement.style.color = fps >= 50 ? '#10b981' : fps >= 30 ? '#f59e0b' : '#ef4444';
+                    fpsElement.textContent = `FPS: ${this.currentFPS}`;
+                    fpsElement.style.color = this.currentFPS >= 50 ? '#10b981' : this.currentFPS >= 30 ? '#f59e0b' : '#ef4444';
                 }
                 frameCount = 0;
                 lastTime = currentTime;
@@ -333,6 +392,17 @@ class AccuratePerformanceMonitor {
             platformElement.textContent = `Platform: ${this.detectPlatform()}`;
         }
     }
+
+    getCurrentFPS() {
+        return this.currentFPS || 60;
+    }
+
+    async logInteraction(action, data = {}) {
+        return await this.logToDatabase('/api/interaction', {
+            action: action,
+            data: data
+        });
+    }
 }
 
 // Initialize performance monitor
@@ -349,19 +419,28 @@ window.addEventListener('load', async () => {
             const metrics = await performanceMonitor.getDetailedMetrics();
             performanceMonitor.displayMetrics(metrics);
             
-            // Store for research
-            window.latestPerformanceMetrics = metrics;
-            
-            // Show cold start indicator if detected
-            if (metrics.isColdStart) {
-                const indicator = document.createElement('div');
-                indicator.className = 'fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50 animate-pulse';
-                indicator.innerHTML = `❄️ Cold Start Detected<br>TTFB: ${metrics.coldStartTTFB}ms`;
-                document.body.appendChild(indicator);
-                setTimeout(() => indicator.remove(), 10000);
-            }
-            
-        } catch (error) {
+        // Store for research
+        window.latestPerformanceMetrics = metrics;
+        
+        // Save performance data to database
+        await this.logToDatabase('/api/performance', {
+            platform: metrics.platform,
+            loadTime: metrics.totalLoadTime,
+            ttfb: metrics.navigation?.ttfb || 0,
+            isColdStart: metrics.isColdStart,
+            memoryUsage: metrics.memory?.usedJSHeapSize || 0,
+            fpsAverage: this.getCurrentFPS(),
+            userAgent: navigator.userAgent.substring(0, 200)
+        });
+        
+        // Show cold start indicator if detected
+        if (metrics.isColdStart) {
+            const indicator = document.createElement('div');
+            indicator.className = 'fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50 animate-pulse';
+            indicator.innerHTML = `❄️ Cold Start Detected<br>TTFB: ${metrics.coldStartTTFB}ms`;
+            document.body.appendChild(indicator);
+            setTimeout(() => indicator.remove(), 10000);
+        }        } catch (error) {
             console.error('Performance monitoring error:', error);
         }
     }, 3000);
