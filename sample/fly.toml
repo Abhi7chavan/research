@@ -1,13 +1,8 @@
-app = "simple-ecommerce-app"
+app = "simple-ecommerce-static"
 primary_region = "ord"
 
-[build]
-
-[env]
-  NODE_ENV = "production"
-
 [http_service]
-  internal_port = 3000
+  internal_port = 80
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
