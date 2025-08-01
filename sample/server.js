@@ -11,10 +11,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// PostgreSQL connection with Railway URL
+// PostgreSQL connection using environment variable
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:TMuFIuceyoohszjypofLlbMSYzSXNHfn@centerbeam.proxy.rlwy.net:34267/railway',
-  ssl: { rejectUnauthorized: false }
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 // Auto-create database tables
